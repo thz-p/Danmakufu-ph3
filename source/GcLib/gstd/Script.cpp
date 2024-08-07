@@ -2808,34 +2808,56 @@ void script_machine::resume()
 	}
 }
 
+// 调用特定事件的函数
 void script_machine::call(std::string event_name)
 {
-	if(bTerminate)return;
+    // 如果已终止，则直接返回
+    if (bTerminate)
+        return;
 
-	assert(!error);
-	assert(!stopped);
-	if(engine->events.find(event_name) != engine->events.end())
-	{
-		run();	//念のため
+    // 断言确保没有错误状态
+    assert(!error);
 
-		int threadIndex = current_thread_index;
-		current_thread_index = 0;
+    // 断言确保没有停止状态
+    assert(!stopped);
 
-		script_engine::block * event = engine->events[event_name];
-		++(threads[0]->ref_count);
-		threads[0] = new_environment(threads[0], event);
+    // 检查在引擎中是否存在给定名称的事件
+    if (engine->events.find(event_name) != engine->events.end())
+    {
+        // 运行脚本，作为预防措施
+        run(); // 念のため
 
-		finished = false;
-		environment* epp = threads[0]->parent->parent;
-		call_start_parent_environment_list.push_back(epp);
-		while(!finished && !bTerminate)
-		{
-			advance();
-		}
-		call_start_parent_environment_list.pop_back();
-		finished = false;
-		current_thread_index = threadIndex;
-	}
+        // 保存当前线程索引，以便后续恢复
+        int threadIndex = current_thread_index;
+
+        // 切换到主线程（索引为0）
+        current_thread_index = 0;
+
+        // 获取特定事件的代码块
+        script_engine::block *event = engine->events[event_name];
+
+        // 增加主线程环境的引用计数
+        ++(threads[0]->ref_count);
+
+        // 创建新的执行环境，并将其设定为特定事件的代码块
+        threads[0] = new_environment(threads[0], event);
+
+        // 初始化标志和环境列表
+        finished = false;
+        environment* epp = threads[0]->parent->parent;
+        call_start_parent_environment_list.push_back(epp);
+
+        // 在未完成和未终止的情况下，不断推进执行
+        while (!finished && !bTerminate)
+        {
+            advance();
+        }
+
+        // 完成后移除环境列表最后一个元素，并重置标志和当前线程索引
+        call_start_parent_environment_list.pop_back();
+        finished = false;
+        current_thread_index = threadIndex;
+    }
 }
 
 // 检查是否存在特定事件的函数
