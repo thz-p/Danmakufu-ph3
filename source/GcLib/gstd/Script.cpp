@@ -2838,10 +2838,16 @@ void script_machine::call(std::string event_name)
 	}
 }
 
+// ??是否存在特定事件的函数
 bool script_machine::has_event(std::string event_name)
 {
-	assert(!error);
-	return engine->events.find(event_name) != engine->events.end();
+    // 断言?保没有??状?
+    assert(!error);
+
+    // ??在引擎中是否存在?定名称的事件
+    // 使用 find 方法?找 event_name 是否在 engine->events 容器中
+    // 如果 find 返回的迭代器不等于 end()，?明找到了?事件
+    return engine->events.find(event_name) != engine->events.end();
 }
 
 // ?取当前代?行号的函数
