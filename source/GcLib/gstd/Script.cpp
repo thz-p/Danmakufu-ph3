@@ -2844,10 +2844,16 @@ bool script_machine::has_event(std::string event_name)
 	return engine->events.find(event_name) != engine->events.end();
 }
 
+// ?取当前代?行号的函数
 int script_machine::get_current_line()
 {
-	environment * current = threads.at[current_thread_index];
-	script_engine::code * c = & (current->sub->codes.at[current->ip]);
+	// ?取当前?程的?行?境指?
+	environment *current = threads.at(current_thread_index);
+
+	// ?取当前指令的代??象指?
+	script_engine::code *c = &(current->sub->codes.at(current->ip));
+
+	// 返回当前指令的代?行号
 	return c->line;
 }
 
